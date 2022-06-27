@@ -1,0 +1,27 @@
+public class Task {
+    private final String name;
+    private final String description;
+    private final int idNumber;
+    private final String status; //может принимать значения "NEW", "IN_PROGRESS", "DONE"
+
+    public Task(String name, String description, int idNumber, String status){
+        this.name = name;
+        this.description = description;
+        this.idNumber = idNumber;
+        this.status = status;
+    }
+
+    public int getIdNumber() {
+        return idNumber;
+    }
+
+    @Override
+    public String toString() {
+        return "Task{" +
+                "name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", idNumber=" + idNumber +
+                ", status='" + status + '\'' +
+                '}';
+    }
+}
