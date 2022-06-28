@@ -1,18 +1,37 @@
 public class Task {
     private final String name;
     private final String description;
-    private final int idNumber;
-    private final String status; //может принимать значения "NEW", "IN_PROGRESS", "DONE"
+    private int idNumber;
+    private String status; //может принимать значения "NEW", "IN_PROGRESS", "DONE"
 
-    public Task(String name, String description, int idNumber, String status){
+    public Task(String name, String description, String status){
         this.name = name;
         this.description = description;
-        this.idNumber = idNumber;
         this.status = status;
+    }
+
+    public void setIdNumber(int idNumber) {
+        this.idNumber = idNumber;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
     }
 
     public int getIdNumber() {
         return idNumber;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     @Override
