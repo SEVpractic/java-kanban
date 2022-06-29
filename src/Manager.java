@@ -44,6 +44,18 @@ public class Manager {
         }
     }
 
+    public void updateTasks(Task task, Task tasksLastVersion){
+        boolean notExeption;
+
+        task.setIdNumber(tasksLastVersion.getIdNumber());
+        notExeption = (task.getName() != null) && (task.getDescription() != null)
+                && (task.getStatus().equals("NEW") || task.getStatus().equals("DONE")
+                || task.getStatus().equals("IN_PROGRESS"));
+        if (notExeption){
+            tasks.put(task.getIdNumber(), task);
+        }
+    }
+
     public void deliteTaskByID(int idNumber){
         tasks.remove(idNumber);
     }
@@ -66,6 +78,18 @@ public class Manager {
         boolean notExeption;
 
         epic.setIdNumber(generateIdNumber());
+        notExeption = (epic.getName() != null) && (epic.getDescription() != null)
+                && (epic.getStatus().equals("NEW") || epic.getStatus().equals("DONE")
+                || epic.getStatus().equals("IN_PROGRESS"));
+        if (notExeption){
+            epics.put(epic.getIdNumber(), epic);
+        }
+    }
+
+    public void updateEpics(Epic epic, Epic epicsLastVersion){
+        boolean notExeption;
+
+        epic.setIdNumber(epicsLastVersion.getIdNumber());
         notExeption = (epic.getName() != null) && (epic.getDescription() != null)
                 && (epic.getStatus().equals("NEW") || epic.getStatus().equals("DONE")
                 || epic.getStatus().equals("IN_PROGRESS"));
@@ -110,7 +134,6 @@ public class Manager {
 
     public void setSubtasks(Subtask subtask){
         int epicID;
-        int doneSubtasks = 0;
         boolean notExeption;
 
         subtask.setIdNumber(generateIdNumber());
@@ -120,10 +143,32 @@ public class Manager {
         if (notExeption){
             subtasks.put(subtask.getIdNumber(), subtask);
         }
-
         epicID = subtask.getEpicsID();
         epics.get(epicID).setIncludeSubtasksIDs(subtask);
+        setEpicsStatus(subtask);
+    }
 
+    public void updateSubtasks(Subtask subtask, Subtask subtasksLastVersion){
+        int epicID;
+        boolean notExeption;
+
+        subtask.setIdNumber(subtasksLastVersion.getIdNumber());
+        notExeption = (subtask.getName() != null) && (subtask.getDescription() != null)
+                && (subtask.getStatus().equals("NEW") || subtask.getStatus().equals("DONE")
+                || subtask.getStatus().equals("IN_PROGRESS"));
+        if (notExeption){
+            subtasks.put(subtask.getIdNumber(), subtask);
+        }
+        epicID = subtask.getEpicsID();
+        epics.get(epicID).setIncludeSubtasksIDs(subtask);
+        setEpicsStatus(subtask);
+    }
+
+    private void setEpicsStatus(Subtask subtask){
+        int doneSubtasks = 0;
+        int epicID;
+
+        epicID = subtask.getEpicsID();
         for (Integer i : epics.get(epicID).getIncludeSubtasksIDs()) {
             if (subtasks.get(i).getStatus().equals("DONE")){
                 doneSubtasks++;
