@@ -1,17 +1,16 @@
+package task;
+
 public class Task {
     private final String name;
     private final String description;
-    private int idNumber;
-    private String status; //может принимать значения "NEW", "IN_PROGRESS", "DONE"
+    private final int idNumber;
+    private final Status status;
 
-    public Task(String name, String description, String status){
+    public Task(String name, String description, int idNumber, Status status) {
         this.name = name;
         this.description = description;
-        this.status = status;
-    }
-
-    public void setIdNumber(int idNumber) {
         this.idNumber = idNumber;
+        this.status = status;
     }
 
     public String getName() {
@@ -26,17 +25,13 @@ public class Task {
         return idNumber;
     }
 
-    public String getStatus() {
+    public Status getStatus() {
         return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
     }
 
     @Override
     public String toString() {
-        return "Task{" +
+        return "task.Task{" +
                 "name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", idNumber=" + idNumber +
