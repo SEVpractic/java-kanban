@@ -12,16 +12,16 @@ public class Main {
 
         System.out.println("первая итерация задач:");
 
-        Task task1 = new Task("Первая задача", "Описание первой задачи", Managers.getDefault().generateIdNumber(),
-                Status.NEW);
+        Task task1 = new Task("Первая задача", "Описание первой задачи",
+                Managers.getDefault().generateIdNumber(), Status.NEW);
         Managers.getDefault().addTasks(task1);
 
-        Task task2 = new Task("Вторая задача", "Описание второй задачи", Managers.getDefault().generateIdNumber(),
-                Status.NEW);
+        Task task2 = new Task("Вторая задача", "Описание второй задачи",
+                Managers.getDefault().generateIdNumber(), Status.NEW);
         Managers.getDefault().addTasks(task2);
 
-        Epic epic1 = new Epic("Первый эпик", "Описание первого эпика", Managers.getDefault().generateIdNumber(),
-                Status.NEW, new ArrayList<>());
+        Epic epic1 = new Epic("Первый эпик", "Описание первого эпика",
+                Managers.getDefault().generateIdNumber(), Status.NEW, new ArrayList<>());
         Managers.getDefault().addEpics(epic1);
 
         Subtask subtask11 = new Subtask("Первая подзадача первого эпика",
@@ -34,8 +34,8 @@ public class Main {
                 Status.NEW, epic1.getIdNumber());
         Managers.getDefault().addSubtasks(subtask12);
 
-        Epic epic2 = new Epic("Второй эпик", "описание второго эпика", Managers.getDefault().generateIdNumber(),
-                Status.NEW, new ArrayList<>());
+        Epic epic2 = new Epic("Второй эпик", "описание второго эпика",
+                Managers.getDefault().generateIdNumber(), Status.NEW, new ArrayList<>());
         Managers.getDefault().addEpics(epic2);
 
         Subtask subtask21 = new Subtask("Первая подзадача второго эпика",

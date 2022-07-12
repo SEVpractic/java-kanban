@@ -7,53 +7,56 @@ import task.Task;
 import java.util.HashMap;
 
 public interface TaskManager {
+    public static final HashMap<Integer, Task> tasks = new HashMap<>();
+    public static final HashMap<Integer, Epic> epics = new HashMap<>();
+    public static final HashMap<Integer, Subtask> subtasks = new HashMap<>();
 
-    int generateIdNumber();
+    public int generateIdNumber();
 
     // Методы по коллекции задач
-    HashMap<Integer, Task> getTasks();
+    public HashMap<Integer, Task> getTasks();
 
-    void deliteAllTasks();
+    public void deliteAllTasks();
 
-    Task getTaskByID(int idNumber);
+    public Task getTaskByID(int idNumber);
 
-    void addTasks(Task task);
+    public void addTasks(Task task);
 
-    void updateTasks(Task task);
+    public void updateTasks(Task task);
 
-    void deliteTaskByID(int idNumber);
+    public void deliteTaskByID(int idNumber);
 
     // Методы по коллекции эпиков
-    HashMap<Integer, Epic> getEpics();
+    public HashMap<Integer, Epic> getEpics();
 
-    void deliteAllEpics();
+    public void deliteAllEpics();
 
-    Task getEpicByID(int idNumber);
+    public Task getEpicByID(int idNumber);
 
-    void addEpics(Epic epic);
+    public void addEpics(Epic epic);
 
-    void updateEpics(Epic epic);
+    public void updateEpics(Epic epic);
 
-    void checkEpicsStatus (int epicsID);
+    public void checkEpicsStatus (int epicsID);
 
-    void deliteEpicByID(int idNumber);
+    public void deliteEpicByID(int idNumber);
 
-    HashMap<Integer, Subtask> getSubtasksByEpicsID(int idNumber);
+    public HashMap<Integer, Subtask> getSubtasksByEpicsID(int idNumber);
 
     // методы по коллекции подзадач
-    HashMap<Integer, Subtask> getSubtasks();
+    public HashMap<Integer, Subtask> getSubtasks();
 
-    void deliteAllSubtasks();
+    public void deliteAllSubtasks();
 
-    Subtask getSubtaskByID(int idNumber);
+    public Subtask getSubtaskByID(int idNumber);
 
-    void addSubtasks(Subtask subtask);
+    public void addSubtasks(Subtask subtask);
 
-    void updateSubtasks(Subtask subtask);
+    public void updateSubtasks(Subtask subtask);
 
-    void deliteSubtaskByID(int idNumber);
+    public void deliteSubtaskByID(int idNumber);
 
-    void addSubtaskToEpic(Subtask subtask);
+    public void addSubtaskToEpic(Subtask subtask);
 
-    void removeSubtaskFromEpic(Subtask subtask);
+    public void removeSubtaskFromEpic(Subtask subtask);
 }

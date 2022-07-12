@@ -31,11 +31,11 @@ public class Task {
 
     @Override
     public String toString() {
-        return "task.Task{" +
+        return "Task{" +
                 "name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", idNumber=" + idNumber +
-                ", status='" + status + '\'' +
+                ", status=" + status +
                 '}';
     }
 }
