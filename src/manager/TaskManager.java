@@ -7,11 +7,10 @@ import task.Task;
 import java.util.HashMap;
 
 public interface TaskManager {
-    public static final HashMap<Integer, Task> tasks = new HashMap<>();
-    public static final HashMap<Integer, Epic> epics = new HashMap<>();
-    public static final HashMap<Integer, Subtask> subtasks = new HashMap<>();
 
     public int generateIdNumber();
+
+    public HistoryManager getHistory();
 
     // Методы по коллекции задач
     public HashMap<Integer, Task> getTasks();

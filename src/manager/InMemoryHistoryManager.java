@@ -4,6 +4,11 @@ import task.Task;
 import java.util.LinkedList;
 
 public class InMemoryHistoryManager implements HistoryManager {
+    private final LinkedList<Task> history;
+
+    public InMemoryHistoryManager() {
+        history = new LinkedList<>();
+    }
 
     @Override
     public void add(Task task) {

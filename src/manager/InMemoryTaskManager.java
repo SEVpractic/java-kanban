@@ -9,12 +9,29 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class InMemoryTaskManager implements TaskManager {
-    private static int idNumberReserv = 0;
+    private final HashMap<Integer, Task> tasks;
+    private final HashMap<Integer, Epic> epics;
+    private final HashMap<Integer, Subtask> subtasks;
+    private final HistoryManager historyManager;
+    private int idNumberReserv;
+
+    public InMemoryTaskManager() {
+        this.tasks = new HashMap<>();
+        this.epics = new HashMap<>();
+        this.subtasks = new HashMap<>();
+        historyManager = Managers.getDefaultHistory();
+        this.idNumberReserv = 0;
+    }
 
     @Override
     public int generateIdNumber() {
         idNumberReserv++;
         return idNumberReserv;
+    }
+
+    @Override
+    public HistoryManager getHistory() {
+        return historyManager;
     }
 
     // Методы по коллекции задач
@@ -30,7 +47,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Task getTaskByID(int idNumber) {
-        Managers.getDefaultHistory().add(tasks.get(idNumber));
+        historyManager.add(tasks.get(idNumber));
         return tasks.get(idNumber);
     }
 
@@ -67,7 +84,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Task getEpicByID(int idNumber) {
-        Managers.getDefaultHistory().add(epics.get(idNumber));
+        historyManager.add(epics.get(idNumber));
         return epics.get(idNumber);
     }
 
@@ -154,7 +171,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Subtask getSubtaskByID(int idNumber) {
-        Managers.getDefaultHistory().add(subtasks.get(idNumber));
+        historyManager.add(subtasks.get(idNumber));
         return subtasks.get(idNumber);
     }
 
