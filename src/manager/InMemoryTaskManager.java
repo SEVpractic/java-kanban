@@ -37,11 +37,13 @@ public class InMemoryTaskManager implements TaskManager {
     // Методы по коллекции задач
     @Override
     public HashMap<Integer, Task> getTasks() {
+        historyManager.add(tasks.values().toArray(new Task[0]));
         return tasks;
     }
 
     @Override
     public void deliteAllTasks() {
+        historyManager.remove(tasks.keySet().toArray(new Integer[0]));
         tasks.clear();
     }
 
@@ -68,18 +70,21 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void deliteTaskByID(int idNumber) {
         tasks.remove(idNumber);
+        historyManager.remove(idNumber);
     }
 
     // Методы по коллекции эпиков
     @Override
     public HashMap<Integer, Epic> getEpics() {
+        historyManager.add(epics.values().toArray(new Task[0]));
         return epics;
     }
 
     @Override
     public void deliteAllEpics() {
+        historyManager.remove(epics.keySet().toArray(new Integer[0]));
         epics.clear();
-        subtasks.clear();
+        deliteAllSubtasks();
     }
 
     @Override
@@ -144,6 +149,7 @@ public class InMemoryTaskManager implements TaskManager {
             deliteSubtaskByID(id);
         }
         epics.remove(idNumber);
+        historyManager.remove(idNumber);
     }
 
     @Override
@@ -161,11 +167,13 @@ public class InMemoryTaskManager implements TaskManager {
     // методы по коллекции подзадач
     @Override
     public HashMap<Integer, Subtask> getSubtasks() {
+        historyManager.add(subtasks.values().toArray(new Task[0]));
         return subtasks;
     }
 
     @Override
     public void deliteAllSubtasks() {
+        historyManager.remove(subtasks.keySet().toArray(new Integer[0]));
         subtasks.clear();
     }
 
@@ -200,6 +208,7 @@ public class InMemoryTaskManager implements TaskManager {
 
         removeSubtaskFromEpic(subtasks.get(idNumber));
         subtasks.remove(idNumber);
+        historyManager.remove(idNumber);
         checkEpicsStatus(epicsID);
     }
 
