@@ -30,7 +30,7 @@ public interface TaskManager {
 
     public void deliteAllEpics();
 
-    public Task getEpicByID(int idNumber);
+    public Epic getEpicByID(int idNumber);
 
     public void addEpics(Epic epic);
 

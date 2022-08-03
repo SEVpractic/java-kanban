@@ -7,19 +7,44 @@ import java.util.HashMap;
 import java.util.List;
 
 public class InMemoryHistoryManager implements HistoryManager {
-    private class CustomLinkedList<T extends Task > {
-        private class Node<E> {
-            public E data;
-            public Node<E> next;
-            public Node<E> prev;
+    private final CustomLinkedList<Task> history;
 
-            public Node(Node<E> prev, E data, Node<E> next) {
-                this.data = data;
-                this.next = next;
-                this.prev = prev;
-            }
+    public InMemoryHistoryManager() {
+        history = new CustomLinkedList<>();
+    }
+
+    @Override
+    public void add(Task task) {
+        if (task != null) {
+            history.add(task);
         }
+    }
 
+    @Override
+    public void add(Task[] tasks) {
+        for (Task task : tasks) {
+            add(task);
+        }
+    }
+
+    @Override
+    public void remove(int idNumber) {
+        history.remove(idNumber);
+    }
+
+    @Override
+    public void remove(Integer[] idNumbers) {
+        for (int idNumber : idNumbers) {
+            remove(idNumber);
+        }
+    }
+
+    @Override
+    public List<Task> getInMemoryHistory() {
+        return history.getHistory();
+    }
+
+    private class CustomLinkedList<T extends Task > {
         private Node<T> head; //Указатель на первый элемент списка.
         private Node<T> tail; //Указатель на последний элемент списка.
         private int size; //Количество элементов в списке.
@@ -98,42 +123,17 @@ public class InMemoryHistoryManager implements HistoryManager {
             node.data = null;
             size--;
         }
-    }
 
-    private final CustomLinkedList<Task> history;
+        private static class Node<E> {
+            public E data;
+            public Node<E> next;
+            public Node<E> prev;
 
-    public InMemoryHistoryManager() {
-        history = new CustomLinkedList<>();
-    }
-
-    @Override
-    public void add(Task task) {
-        if (task != null) {
-            history.add(task);
+            public Node(Node<E> prev, E data, Node<E> next) {
+                this.data = data;
+                this.next = next;
+                this.prev = prev;
+            }
         }
-    }
-
-    @Override
-    public void add(Task[] tasks) {
-        for (Task task : tasks) {
-            add(task);
-        }
-    }
-
-    @Override
-    public void remove(int idNumber) {
-        history.remove(idNumber);
-    }
-
-    @Override
-    public void remove(Integer[] idNumbers) {
-        for (int idNumber : idNumbers) {
-            remove(idNumber);
-        }
-    }
-
-    @Override
-    public List<Task> getInMemoryHistory() {
-        return history.getHistory();
     }
 }
