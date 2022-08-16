@@ -1,25 +1,25 @@
 package manager;
 
 import task.Epic;
+import task.Status;
 import task.Subtask;
 import task.Task;
-import task.Status;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class InMemoryTaskManager implements TaskManager {
-    private final HashMap<Integer, Task> tasks;
-    private final HashMap<Integer, Epic> epics;
-    private final HashMap<Integer, Subtask> subtasks;
-    private final HistoryManager historyManager;
-    private int idNumberReserv;
+    protected final HashMap<Integer, Task> tasks;
+    protected final HashMap<Integer, Epic> epics;
+    protected final HashMap<Integer, Subtask> subtasks;
+    protected final HistoryManager historyManager;
+    protected int idNumberReserv;
 
     public InMemoryTaskManager() {
         this.tasks = new HashMap<>();
         this.epics = new HashMap<>();
         this.subtasks = new HashMap<>();
-        historyManager = Managers.getDefaultHistory();
+        this.historyManager = Managers.getDefaultHistory();
         this.idNumberReserv = 0;
     }
 
@@ -108,7 +108,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void checkEpicsStatus (int epicsID) {
+    public void checkEpicsStatus(int epicsID) {
         ArrayList<Integer> includeSubtasksIDs;
         int amountOfDone = 0;
         Status status;
@@ -138,13 +138,8 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void deliteEpicByID(int idNumber) {
-        ArrayList<Integer> includeSubtasksIDs;
-        ArrayList<Integer> subtasksToDelite = new ArrayList<>();
+        ArrayList<Integer> subtasksToDelite = new ArrayList<>(epics.get(idNumber).getIncludeSubtasksIDs());
 
-        includeSubtasksIDs = epics.get(idNumber).getIncludeSubtasksIDs();
-        for (Integer id : includeSubtasksIDs) {
-            subtasksToDelite.add(id);
-        }
         for (Integer id : subtasksToDelite) {
             deliteSubtaskByID(id);
         }

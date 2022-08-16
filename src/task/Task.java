@@ -3,16 +3,18 @@ package task;
 import java.util.Objects;
 
 public class Task {
-    private final String name;
-    private final String description;
-    private final int idNumber;
-    private final Status status;
+    protected final String name;
+    protected final String description;
+    protected final int idNumber;
+    protected final Status status;
+    protected final TasksType type;
 
     public Task(String name, String description, int idNumber, Status status) {
         this.name = name;
         this.description = description;
         this.idNumber = idNumber;
         this.status = status;
+        this.type = TasksType.TASK;
     }
 
     public String getName() {
@@ -33,12 +35,9 @@ public class Task {
 
     @Override
     public String toString() {
-        return "Task{" +
-                "name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", idNumber=" + idNumber +
-                ", status=" + status +
-                '}';
+
+        return String.format("%s,%s,%s,%s,%s",
+                idNumber, type, name, status, description);
     }
 
     @Override
