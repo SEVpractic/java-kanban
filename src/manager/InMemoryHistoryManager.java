@@ -44,6 +44,11 @@ public class InMemoryHistoryManager implements HistoryManager {
         return history.getHistory();
     }
 
+    @Override
+    public String toString() {
+        return history.toString();
+    }
+
     private class CustomLinkedList<T extends Task > {
         private Node<T> head; //Указатель на первый элемент списка.
         private Node<T> tail; //Указатель на последний элемент списка.
@@ -122,6 +127,26 @@ public class InMemoryHistoryManager implements HistoryManager {
 
             node.data = null;
             size--;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder history = new StringBuilder();
+
+            if (head == null) {
+                return history.toString();
+            }
+            Node<T> node = head;
+
+            for (int i = 0; i < size; i++) {
+                history.append(node.data.getIdNumber());
+                if (i < size - 1) {
+                    history.append(",");
+                }
+                node = node.next;
+            }
+
+            return history.toString();
         }
 
         private static class Node<E> {
