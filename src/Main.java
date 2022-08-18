@@ -14,9 +14,13 @@ import java.util.List;
 public class Main {
 
     public static void main(String[] args) {
+        TaskManager taskManager = Managers.getFileBackedManager(new File("src/test.csv"));
+        fillTaskManager(taskManager);
+        taskManager.getTasks();
+
         // набор тестов класса FileBackedTasksManager:
 
-        Tasks_creation_correct(Managers.getFileBackedManager(new File("src/test.csv")));// проверка корректности создания коллекции задач.
+        /*Tasks_creation_correct(Managers.getFileBackedManager(new File("src/test.csv")));// проверка корректности создания коллекции задач.
         Epics_creation_correct(Managers.getFileBackedManager(new File("src/test.csv"))); // проверка корректности создания коллекции эпиков.
         Subtasks_creation_correct(Managers.getFileBackedManager(new File("src/test.csv"))); // проверка корректности создания коллекции подзадач.
         Tasks_deletion_correct(Managers.getFileBackedManager(new File("src/test.csv"))); // проверка корректности удаления задач.
@@ -52,7 +56,7 @@ public class Main {
         Browsing_history_is_in_order(Managers.getDefault()); //проверка правильности построения истории просмотров.
         Browsing_history_does_not_contain_duplicates(Managers.getDefault()); //проверка отсутствия повторов в истории.
         Browsing_history_does_not_contain_deleted_items(Managers.getDefault()); //проверка отсутствия в истории удаленных элементов.
-
+*/
      }
 
     public static void Tasks_creation_correct(TaskManager taskManager) {

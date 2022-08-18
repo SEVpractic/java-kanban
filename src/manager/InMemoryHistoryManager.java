@@ -4,6 +4,7 @@ import task.Task;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 
 public class InMemoryHistoryManager implements HistoryManager {
@@ -11,6 +12,24 @@ public class InMemoryHistoryManager implements HistoryManager {
 
     public InMemoryHistoryManager() {
         history = new CustomLinkedList<>();
+    }
+
+    public static String historyToString(HistoryManager manager) {
+        return manager.toString();
+    }
+
+    public static List<Integer> historyFromString(String value) {
+        List<Integer> historyByIDs = new LinkedList<>();
+
+        for (String s : value.split(",")) {
+            try {
+                historyByIDs.add(Integer.parseInt(s));
+            } catch (NumberFormatException e) {
+                System.out.println("Ошибка загрузки, не удалось создать историю");
+            }
+        }
+
+        return historyByIDs;
     }
 
     @Override

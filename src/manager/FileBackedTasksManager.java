@@ -6,6 +6,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class FileBackedTasksManager extends InMemoryTaskManager {
     private final File file;
@@ -70,46 +71,38 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
         try (BufferedReader bufferedReader =
                      new BufferedReader(new FileReader(file, StandardCharsets.UTF_8))) {
-            while (bufferedReader.ready()){
-                lines.add(bufferedReader.readLine());
-            }
+            String line;
+            do {
+                line = bufferedReader.readLine();
+                if (line != null) {
+                    lines.add(line);
+                }
+            } while (line != null);
         } catch (IOException e) {
             System.out.println("Ошибка загрузки, файл не существует");
         }
 
         tasksManager.fillTaskManager(lines);
+        tasksManager.fillHistory(InMemoryHistoryManager.historyFromString(lines.get(lines.size() - 1)));
 
         return tasksManager;
     }
 
     private void fillTaskManager(ArrayList<String> lines) {
-        for (int i = 1; i < lines.size(); i++) {
-            if (lines.get(i).isEmpty() && (lines.size() > (i + 1))) {
-                if (!lines.get(i + 1).isEmpty()) {
-                    fillHistoryManager(lines.get(i + 1));
-                }
-                break;
-            } else {
-                fromString(lines.get(i));
-            }
+        for (int i = 1; i < (lines.size() - 2); i++) {
+            fromString(lines.get(i));
         }
     }
 
-    private void fillHistoryManager(String line) {
-        String[] IDs = line.split(",");
-
-        try {
-            for (String id : IDs) {
-                if (tasks.containsKey(Integer.parseInt(id))) {
-                    getTaskByID(Integer.parseInt(id));
-                } else if (epics.containsKey(Integer.parseInt(id))) {
-                    getEpicByID(Integer.parseInt(id));
-                } else if (subtasks.containsKey(Integer.parseInt(id))) {
-                    getSubtaskByID(Integer.parseInt(id));
-                }
+    private void fillHistory(List<Integer> history) {
+        for (Integer id : history) {
+            if (tasks.containsKey(id)) {
+                getTaskByID(id);
+            } else if (epics.containsKey(id)) {
+                getEpicByID(id);
+            } else if (subtasks.containsKey(id)) {
+                getSubtaskByID(id);
             }
-        } catch (NumberFormatException e) {
-            System.out.println("Ошибка загрузки, не удалось создать историю");
         }
     }
 
@@ -152,23 +145,20 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         }
     }
 
-    private void save() {
-
+    private void save() throws ManagerSaveException {
         try (BufferedWriter bufferedWriter =
                      new BufferedWriter(new FileWriter(file, StandardCharsets.UTF_8))) {
-            if (!file.exists()) {
-                throw new ManagerSaveException("Ошибка сохранения, файл не существует");
-            }
             bufferedWriter.write(toString());
-        } catch (ManagerSaveException | IOException e) {
-            System.out.println(e.getMessage());
+        } catch (IOException e) {
+            throw new ManagerSaveException("Ошибка сохранения");
         }
     }
 
     @Override
     public String toString() {
         return String.format("id,type,name,status,description,epic\n%s%s%s\n%s",
-                tasksToString(), epicsToString(), subtasksToString(), historyManager);
+                tasksToString(), epicsToString(), subtasksToString(),
+                InMemoryHistoryManager.historyToString(historyManager));
     }
 
     private String tasksToString() {
@@ -207,108 +197,199 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     @Override
     public HashMap<Integer, Task> getTasks() {
         historyManager.add(tasks.values().toArray(new Task[0]));
-        save();
+
+        try {
+            save();
+        } catch (ManagerSaveException e) {
+            System.out.println(e.getMessage());
+        }
+
         return tasks;
     }
 
     @Override
     public void deliteAllTasks() {
         super.deliteAllTasks();
-        save();
+
+        try {
+            save();
+        } catch (ManagerSaveException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     @Override
     public Task getTaskByID(int idNumber) {
         historyManager.add(tasks.get(idNumber));
-        save();
+
+        try {
+            save();
+        } catch (ManagerSaveException e) {
+            System.out.println(e.getMessage());
+        }
+
         return tasks.get(idNumber);
     }
 
     @Override
     public void addTasks(Task task) {
         super.addTasks(task);
-        save();
+
+        try {
+            save();
+        } catch (ManagerSaveException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     @Override
     public void updateTasks(Task task) {
         super.updateTasks(task);
-        save();
+
+        try {
+            save();
+        } catch (ManagerSaveException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     @Override
     public void deliteTaskByID(int idNumber) {
         super.deliteTaskByID(idNumber);
-        save();
+
+        try {
+            save();
+        } catch (ManagerSaveException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     @Override
     public HashMap<Integer, Epic> getEpics() {
         historyManager.add(epics.values().toArray(new Task[0]));
-        save();
+
+        try {
+            save();
+        } catch (ManagerSaveException e) {
+            System.out.println(e.getMessage());
+        }
+
         return epics;
     }
 
     @Override
     public void deliteAllEpics() {
         super.deliteAllEpics();
-        save();
+
+        try {
+            save();
+        } catch (ManagerSaveException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     @Override
     public Epic getEpicByID(int idNumber) {
         historyManager.add(epics.get(idNumber));
-        save();
+
+        try {
+            save();
+        } catch (ManagerSaveException e) {
+            System.out.println(e.getMessage());
+        }
+
         return epics.get(idNumber);
     }
 
     @Override
     public void addEpics(Epic epic) {
         super.addEpics(epic);
-        save();
+
+        try {
+            save();
+        } catch (ManagerSaveException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     @Override
     public void deliteEpicByID(int idNumber) {
         super.deliteEpicByID(idNumber);
-        save();
+
+        try {
+            save();
+        } catch (ManagerSaveException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     @Override
     public HashMap<Integer, Subtask> getSubtasks() {
         historyManager.add(subtasks.values().toArray(new Task[0]));
-        save();
+
+        try {
+            save();
+        } catch (ManagerSaveException e) {
+            System.out.println(e.getMessage());
+        }
+
         return subtasks;
     }
 
     @Override
     public void deliteAllSubtasks() {
         super.deliteAllSubtasks();
-        save();
+
+        try {
+            save();
+        } catch (ManagerSaveException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     @Override
     public Subtask getSubtaskByID(int idNumber) {
         historyManager.add(subtasks.get(idNumber));
-        save();
+
+        try {
+            save();
+        } catch (ManagerSaveException e) {
+            System.out.println(e.getMessage());
+        }
+
         return subtasks.get(idNumber);
     }
 
     @Override
     public void addSubtasks(Subtask subtask) {
         super.addSubtasks(subtask);
-        save();
+
+        try {
+            save();
+        } catch (ManagerSaveException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     @Override
     public void updateSubtasks(Subtask subtask) {
         super.updateSubtasks(subtask);
-        save();
+
+        try {
+            save();
+        } catch (ManagerSaveException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     @Override
     public void deliteSubtaskByID(int idNumber) {
         super.deliteSubtaskByID(idNumber);
-        save();
+
+        try {
+            save();
+        } catch (ManagerSaveException e) {
+            System.out.println(e.getMessage());
+        }
     }
 }
