@@ -242,16 +242,16 @@ public class InMemoryTaskManager implements TaskManager {
             }
         }
 
-            Epic newEpic = new Epic(
-                    epics.get(epicsID).getName(),
-                    epics.get(epicsID).getDescription(),
-                    epicsID,
-                    epics.get(epicsID).getStatus(),
-                    epics.get(epicsID).getDuration(),
-                    epics.get(epicsID).getStartTime(),
-                    includeSubtasksIDs,
-                    endTime);
-            updateEpics(newEpic);
+        Epic newEpic = new Epic(
+                epics.get(epicsID).getName(),
+                epics.get(epicsID).getDescription(),
+                epicsID,
+                epics.get(epicsID).getStatus(),
+                epics.get(epicsID).getDuration(),
+                epics.get(epicsID).getStartTime(),
+                includeSubtasksIDs,
+                endTime);
+        updateEpics(newEpic);
     }
 
     @Override
@@ -274,6 +274,7 @@ public class InMemoryTaskManager implements TaskManager {
         for (Integer id : includeSubtasksIDs) {
             includeSubtasks.put(id, getSubtaskByID(id));
         }
+
         return includeSubtasks;
     }
 
