@@ -2,10 +2,7 @@ package manager;
 
 import task.Task;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class InMemoryHistoryManager implements HistoryManager {
     private final CustomLinkedList<Task> history;
@@ -41,9 +38,7 @@ public class InMemoryHistoryManager implements HistoryManager {
 
     @Override
     public void add(Task[] tasks) {
-        for (Task task : tasks) {
-            add(task);
-        }
+        Arrays.stream(tasks).forEach(this::add);
     }
 
     @Override
@@ -53,9 +48,7 @@ public class InMemoryHistoryManager implements HistoryManager {
 
     @Override
     public void remove(Integer[] idNumbers) {
-        for (int idNumber : idNumbers) {
-            remove(idNumber);
-        }
+        Arrays.stream(idNumbers).forEach(this::remove);
     }
 
     @Override

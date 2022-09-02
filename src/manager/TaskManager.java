@@ -5,12 +5,17 @@ import task.Subtask;
 import task.Task;
 
 import java.util.HashMap;
+import java.util.TreeSet;
 
 public interface TaskManager {
 
     public int generateIdNumber();
 
     public HistoryManager getHistory();
+
+    public TreeSet<Task> getPrioritizedTasks();
+
+    public boolean isTimeValid(Task task);
 
     // Методы по коллекции задач
     public HashMap<Integer, Task> getTasks();
@@ -36,7 +41,13 @@ public interface TaskManager {
 
     public void updateEpics(Epic epic);
 
-    public void checkEpicsStatus (int epicsID);
+    public void checkEpicsStatus(int epicsID);
+
+    public void checkEpicsStartTime(int epicsID);
+
+    public void checkEpicsDuration(int epicsID);
+
+    public void checkEpicsEndTime(int epicsID);
 
     public void deliteEpicByID(int idNumber);
 
