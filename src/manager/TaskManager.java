@@ -15,6 +15,14 @@ public interface TaskManager {
 
     public TreeSet<Task> getPrioritizedTasks();
 
+    public void addPrioritizedTasks(Task task);
+
+    public void updatePrioritizedTasks(Task task);
+
+    public void delitePrioritizedTasks(Task task);
+
+    public void delitePrioritizedTasks(Task[] tasks);
+
     public boolean isTimeValid(Task task);
 
     // Методы по коллекции задач

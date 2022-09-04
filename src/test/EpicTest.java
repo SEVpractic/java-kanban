@@ -21,7 +21,8 @@ class EpicTest {
         includeSubtasksIDs.addAll(List.of(2, 3, 4));
 
         epic = new Epic("Epic1", "Description epic1", 1, Status.NEW, Duration.ofMinutes(60),
-                LocalDateTime.of(2022, 9, 01, 00, 00, 00), includeSubtasksIDs);
+                LocalDateTime.of(2022, 9, 01, 00, 00, 00), includeSubtasksIDs,
+                LocalDateTime.of(2023, 1, 1, 00, 00, 00));
     }
 
     @Test

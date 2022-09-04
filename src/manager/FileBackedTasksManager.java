@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 public class FileBackedTasksManager extends InMemoryTaskManager {
     private final File file;
@@ -23,7 +24,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
         try (BufferedReader bufferedReader =
                      new BufferedReader(new FileReader(file, StandardCharsets.UTF_8))) {
-            lines = bufferedReader.lines().filter(str -> str != null).toList();
+            lines = bufferedReader.lines().filter(Objects::nonNull).toList();
         } catch (IOException e) {
             System.out.println("Ошибка загрузки, файл не существует");
         }
@@ -35,7 +36,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     private void fillTaskManager(List<String> lines) {
-        lines.stream().skip(1).limit(lines.size() - 2).forEach(this::fromString);
+        lines.stream().skip(1).limit(lines.size() - 3).forEach(this::fromString);
     }
 
     private void fillHistory(List<Integer> history) {
@@ -54,8 +55,8 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         String[] line = value.split(",");
 
         try {
-            if (line.length < 5) {
-                throw new IllegalArgumentException();
+            if (line.length < 7) {
+                throw new IllegalArgumentException("Ошибка загрузки, не удалось создать объект (length < 7)");
             }
 
             final String name = line[2];
@@ -70,14 +71,14 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
             if (type.equals(TasksType.TASK)) {
                 addTasks(new Task(name, description, idNumber, status, duration, startTime));
             } else if (type.equals(TasksType.EPIC)) {
-                addEpics(new Epic(name, description, idNumber, status, duration, startTime, new ArrayList<>()));
+                addEpics(new Epic(name, description, idNumber, status, duration, startTime, new ArrayList<>(), null));
             } else if (type.equals(TasksType.SUBTASK)){
-                if (line.length < 6) {
+                if (line.length < 8) {
                     throw new IllegalArgumentException();
                 } else if (epics.containsKey(Integer.parseInt(line[7]))) {
                     epicsID = Integer.parseInt(line[7]);
                 } else {
-                    throw new IllegalArgumentException();
+                    throw new IllegalArgumentException("Ошибка загрузки, не удалось создать эпик (length < 8)");
                 }
                 addSubtasks(new Subtask(name, description, idNumber, status, duration, startTime, epicsID));
             }
@@ -86,7 +87,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                 idNumberReserv = idNumber;
             }
         } catch (IllegalArgumentException e) {
-            System.out.println("Ошибка загрузки, не удалось создать объект");
+            e.printStackTrace();
         }
     }
 

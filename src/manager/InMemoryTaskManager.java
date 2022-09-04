@@ -8,6 +8,7 @@ import task.Task;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.TreeSet;
 
@@ -19,6 +20,7 @@ public class InMemoryTaskManager implements TaskManager {
     protected final HashMap<Integer, Subtask> subtasks;
     protected final HistoryManager historyManager;
     protected int idNumberReserv;
+    TreeSet<Task> prioritizedTasks;
 
     public InMemoryTaskManager() {
         this.tasks = new HashMap<>();
@@ -26,6 +28,8 @@ public class InMemoryTaskManager implements TaskManager {
         this.subtasks = new HashMap<>();
         this.historyManager = Managers.getDefaultHistory();
         this.idNumberReserv = 0;
+        prioritizedTasks = new TreeSet<>(comparing(Task::getStartTime, nullsLast(naturalOrder()))
+                .thenComparing(Task::getIdNumber));
     }
 
     @Override
@@ -41,20 +45,34 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public TreeSet<Task> getPrioritizedTasks() {
-        TreeSet<Task> prioritizedTasks =
-                new TreeSet<>(comparing(Task::getStartTime, nullsLast(naturalOrder()))
-                        .thenComparing(Task::getIdNumber));
-
-        prioritizedTasks.addAll(tasks.values());
-        prioritizedTasks.addAll(subtasks.values());
-
         return prioritizedTasks;
     }
 
     @Override
-    public boolean isTimeValid(Task task) {
+    public void addPrioritizedTasks(Task task) {
+        prioritizedTasks.add(task);
+    }
+
+    @Override
+    public void updatePrioritizedTasks(Task task) {
+        prioritizedTasks.removeIf(t -> t.getIdNumber() == task.getIdNumber());
+        prioritizedTasks.add(task);
+    }
+
+    @Override
+    public void delitePrioritizedTasks(Task task) {
+        prioritizedTasks.remove(task);
+    }
+
+    @Override
+    public void delitePrioritizedTasks(Task[] tasks) {
+        Arrays.stream(tasks).forEach(this::delitePrioritizedTasks);
+    }
+
+    @Override
+    public boolean isTimeValid(Task task) throws IllegalStateException {
         if (task.getStartTime() == null) {
-            return true;
+            throw new IllegalArgumentException("время начала выполнения равно null");
         }
 
         for (Task prioritizedTask : getPrioritizedTasks()) {
@@ -63,7 +81,7 @@ public class InMemoryTaskManager implements TaskManager {
                         && task.getStartTime().isBefore(prioritizedTask.getEndTime()))
                         || (task.getEndTime().isAfter(prioritizedTask.getStartTime())
                         && task.getEndTime().isBefore(prioritizedTask.getEndTime()))) {
-                    return false;
+                    throw new IllegalArgumentException("время начала выполнения равно null");
                 }
             }
         }
@@ -81,6 +99,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void deliteAllTasks() {
         historyManager.remove(tasks.keySet().toArray(new Integer[0]));
+        delitePrioritizedTasks(tasks.values().toArray(new Task[0]));
         tasks.clear();
     }
 
@@ -92,24 +111,36 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void addTasks(Task task) {
-        if ((task.getName() != null) && (task.getDescription() != null) && isTimeValid(task)) {
+        try {
+            if ((task.getName() != null) && (task.getDescription() != null) && isTimeValid(task)) {
                 tasks.put(task.getIdNumber(), task);
+                addPrioritizedTasks(task);
+            }
+        } catch (IllegalArgumentException exception) {
+            System.out.println(exception.getMessage());
         }
     }
 
     @Override
     public void updateTasks(Task task) {
-        if ((task.getName() != null) && (task.getDescription() != null)) {
-            if (task.getStartTime().isEqual(tasks.get(task.getIdNumber()).getStartTime())) {
-                tasks.put(task.getIdNumber(), task);
-            } else if (isTimeValid(task)) {
-                tasks.put(task.getIdNumber(), task);
+        try {
+            if ((task.getName() != null) && (task.getDescription() != null)) {
+                if (task.getStartTime().isEqual(tasks.get(task.getIdNumber()).getStartTime())) {
+                    tasks.put(task.getIdNumber(), task);
+                    updatePrioritizedTasks(task);
+                } else if (isTimeValid(task)) {
+                    tasks.put(task.getIdNumber(), task);
+                    updatePrioritizedTasks(task);
+                }
             }
+        } catch (IllegalArgumentException exception) {
+            System.out.println(exception.getMessage());
         }
     }
 
     @Override
     public void deliteTaskByID(int idNumber) {
+        delitePrioritizedTasks(tasks.get(idNumber));
         tasks.remove(idNumber);
         historyManager.remove(idNumber);
     }
@@ -178,7 +209,8 @@ public class InMemoryTaskManager implements TaskManager {
                     status,
                     epics.get(epicsID).getDuration(),
                     epics.get(epicsID).getStartTime(),
-                    includeSubtasksIDs);
+                    includeSubtasksIDs,
+                    epics.get(epicsID).getEndTime());
             updateEpics(newEpic);
         }
     }
@@ -203,13 +235,14 @@ public class InMemoryTaskManager implements TaskManager {
                 epics.get(epicsID).getStatus(),
                 epics.get(epicsID).getDuration(),
                 startTime,
-                includeSubtasksIDs);
+                includeSubtasksIDs,
+                epics.get(epicsID).getEndTime());
         updateEpics(newEpic);
     }
 
     @Override
     public void checkEpicsDuration(int epicsID) {
-        ArrayList<Integer> includeSubtasksIDs = epics.get(epicsID).getIncludeSubtasksIDs();;
+        ArrayList<Integer> includeSubtasksIDs = epics.get(epicsID).getIncludeSubtasksIDs();
         Duration duration = Duration.ZERO;
 
         for (Integer includeSubtasksID : includeSubtasksIDs) {
@@ -225,7 +258,8 @@ public class InMemoryTaskManager implements TaskManager {
                 epics.get(epicsID).getStatus(),
                 duration,
                 epics.get(epicsID).getStartTime(),
-                includeSubtasksIDs);
+                includeSubtasksIDs,
+                epics.get(epicsID).getEndTime());
         updateEpics(newEpic);
     }
 
@@ -288,6 +322,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void deliteAllSubtasks() {
         historyManager.remove(subtasks.keySet().toArray(new Integer[0]));
+        delitePrioritizedTasks(subtasks.values().toArray(new Task[0]));
         subtasks.clear();
     }
 
@@ -299,31 +334,42 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void addSubtasks(Subtask subtask) {
-
-        if ((subtask.getName() != null) && (subtask.getDescription() != null) && isTimeValid(subtask)) {
-            subtasks.put(subtask.getIdNumber(), subtask);
+        try {
+            if ((subtask.getName() != null) && (subtask.getDescription() != null) && isTimeValid(subtask)) {
+                subtasks.put(subtask.getIdNumber(), subtask);
+            }
+            addSubtaskToEpic(subtask);
+            checkEpicsStatus(subtask.getEpicsID());
+            checkEpicsDuration(subtask.getEpicsID());
+            checkEpicsStartTime(subtask.getEpicsID());
+            checkEpicsEndTime(subtask.getEpicsID());
+            addPrioritizedTasks(subtask);
+        } catch (IllegalArgumentException exception) {
+            System.out.println(exception.getMessage());
         }
-        addSubtaskToEpic(subtask);
-        checkEpicsStatus(subtask.getEpicsID());
-        checkEpicsDuration(subtask.getEpicsID());
-        checkEpicsStartTime(subtask.getEpicsID());
-        checkEpicsEndTime(subtask.getEpicsID());
+
     }
 
     @Override
     public void updateSubtasks(Subtask subtask) {
-        if ((subtask.getName() != null) && (subtask.getDescription() != null)) {
-            if (subtask.getStartTime().isEqual(subtasks.get(subtask.getIdNumber()).getStartTime())) {
-                subtasks.put(subtask.getIdNumber(), subtask);
-            } else if (isTimeValid(subtask)) {
-                subtasks.put(subtask.getIdNumber(), subtask);
+        try {
+            if ((subtask.getName() != null) && (subtask.getDescription() != null)) {
+                if (subtask.getStartTime().isEqual(subtasks.get(subtask.getIdNumber()).getStartTime())) {
+                    subtasks.put(subtask.getIdNumber(), subtask);
+                    updatePrioritizedTasks(subtask);
+                } else if (isTimeValid(subtask)) {
+                    subtasks.put(subtask.getIdNumber(), subtask);
+                    updatePrioritizedTasks(subtask);
+                }
             }
-        }
 
-        checkEpicsStatus(subtask.getEpicsID());
-        checkEpicsDuration(subtask.getEpicsID());
-        checkEpicsStartTime(subtask.getEpicsID());
-        checkEpicsEndTime(subtask.getEpicsID());
+            checkEpicsStatus(subtask.getEpicsID());
+            checkEpicsDuration(subtask.getEpicsID());
+            checkEpicsStartTime(subtask.getEpicsID());
+            checkEpicsEndTime(subtask.getEpicsID());
+        } catch (IllegalArgumentException exception) {
+            System.out.println(exception.getMessage());
+        }
     }
 
     @Override
@@ -331,6 +377,7 @@ public class InMemoryTaskManager implements TaskManager {
         int epicsID = subtasks.get(idNumber).getEpicsID();
 
         removeSubtaskFromEpic(subtasks.get(idNumber));
+        delitePrioritizedTasks(subtasks.get(idNumber));
         subtasks.remove(idNumber);
         historyManager.remove(idNumber);
         checkEpicsStatus(epicsID);
@@ -353,7 +400,8 @@ public class InMemoryTaskManager implements TaskManager {
                 epics.get(epicsID).getStatus(),
                 epics.get(epicsID).getDuration(),
                 epics.get(epicsID).getStartTime(),
-                includeSubtasksIDs);
+                includeSubtasksIDs,
+                epics.get(epicsID).getEndTime());
         epics.put(epicsID, epic);
     }
 
@@ -373,7 +421,8 @@ public class InMemoryTaskManager implements TaskManager {
                 epics.get(epicsID).getStatus(),
                 epics.get(epicsID).getDuration(),
                 epics.get(epicsID).getStartTime(),
-                includeSubtasksIDs);
+                includeSubtasksIDs,
+                epics.get(epicsID).getEndTime());
         epics.put(epicsID, epic);
     }
 }

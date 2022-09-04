@@ -30,7 +30,7 @@ class InMemoryTaskManagerTest extends TaskManagerTest {
         Epic epic1 = new Epic("Epic1", "Description epic1",
                 taskManager.generateIdNumber(), Status.NEW, Duration.ofMinutes(0),
                 LocalDateTime.of(2022, 9, 03, 00, 00, 00),
-                new ArrayList<>());
+                new ArrayList<>(), LocalDateTime.of(2022, 9, 03, 00, 00, 00));
         taskManager.addEpics(epic1);
 
         Subtask subtask11 = new Subtask("Subtask1", "Description subtask1",
@@ -52,7 +52,9 @@ class InMemoryTaskManagerTest extends TaskManagerTest {
         taskManager.addSubtasks(subtask13);
 
         Epic epic2 = new Epic("Epic2", "Description epic2",
-                taskManager.generateIdNumber(), Status.NEW, new ArrayList<>());
+                taskManager.generateIdNumber(), Status.NEW, Duration.ofMinutes(0),
+                LocalDateTime.of(2022, 9, 07, 00, 00, 00),
+                new ArrayList<>(), LocalDateTime.of(2022, 9, 07, 00, 00, 00));
         taskManager.addEpics(epic2);
     }
 

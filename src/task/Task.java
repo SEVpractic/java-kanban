@@ -13,16 +13,6 @@ public class Task {
     protected final Duration duration; // продолжительность задачи в минутах
     protected final LocalDateTime startTime; // время начала выполнения задачи
 
-    public Task(String name, String description, int idNumber, Status status) {
-        this.name = name;
-        this.description = description;
-        this.idNumber = idNumber;
-        this.status = status;
-        this.type = TasksType.TASK;
-        this.duration = null;
-        this.startTime = null;
-    }
-
     public Task(String name, String description, int idNumber, Status status,
                 Duration duration, LocalDateTime startTime) {
         this.name = name;
@@ -51,7 +41,7 @@ public class Task {
     }
 
     public LocalDateTime getEndTime() {
-        return (startTime != null && duration != null) ? startTime.plus(duration) : null;
+        return startTime.plus(duration);
     }
 
     public LocalDateTime getStartTime() {

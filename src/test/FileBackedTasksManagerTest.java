@@ -39,7 +39,7 @@ public class FileBackedTasksManagerTest extends TaskManagerTest {
         Epic epic1 = new Epic("Epic1", "Description epic1",
                 taskManager.generateIdNumber(), Status.NEW, Duration.ofMinutes(0),
                 LocalDateTime.of(2022, 9, 03, 00, 00, 00),
-                new ArrayList<>());
+                new ArrayList<>(), LocalDateTime.of(2022, 9, 03, 00, 00, 00));
         taskManager.addEpics(epic1);
 
         Subtask subtask11 = new Subtask("Subtask1", "Description subtask1",
@@ -61,7 +61,9 @@ public class FileBackedTasksManagerTest extends TaskManagerTest {
         taskManager.addSubtasks(subtask13);
 
         Epic epic2 = new Epic("Epic2", "Description epic2",
-                taskManager.generateIdNumber(), Status.NEW, new ArrayList<>());
+                taskManager.generateIdNumber(), Status.NEW, Duration.ofMinutes(0),
+                LocalDateTime.of(2022, 9, 07, 00, 00, 00),
+                new ArrayList<>(), LocalDateTime.of(2022, 9, 07, 00, 00, 00));
         taskManager.addEpics(epic2);
     }
 
@@ -77,7 +79,7 @@ public class FileBackedTasksManagerTest extends TaskManagerTest {
                         "1,TASK,Task1,NEW,Description task1,PT1H,2022-09-01T00:00\n" +
                         "2,TASK,Task2,NEW,Description task2,PT1H,2022-09-02T00:00\n" +
                         "3,EPIC,Epic1,NEW,Description epic1,PT2H30M,2022-09-04T00:00\n" +
-                        "7,EPIC,Epic2,NEW,Description epic2,null,null\n" +
+                        "7,EPIC,Epic2,NEW,Description epic2,PT0S,2022-09-07T00:00\n" +
                         "4,SUBTASK,Subtask1,NEW,Description subtask1,PT1H,2022-09-04T00:00,3\n" +
                         "5,SUBTASK,Subtask2,NEW,Description subtask2,PT30M,2022-09-05T00:00,3\n" +
                         "6,SUBTASK,Subtask3,NEW,Description subtask3,PT1H,2022-09-06T00:00,3\n\n";
@@ -97,7 +99,7 @@ public class FileBackedTasksManagerTest extends TaskManagerTest {
                         "1,TASK,Task1,NEW,Description task1,PT1H,2022-09-01T00:00\n" +
                         "2,TASK,Task2,NEW,Description task2,PT1H,2022-09-02T00:00\n" +
                         "3,EPIC,Epic1,NEW,Description epic1,PT2H30M,2022-09-04T00:00\n" +
-                        "7,EPIC,Epic2,NEW,Description epic2,null,null\n" +
+                        "7,EPIC,Epic2,NEW,Description epic2,PT0S,2022-09-07T00:00\n" +
                         "4,SUBTASK,Subtask1,NEW,Description subtask1,PT1H,2022-09-04T00:00,3\n" +
                         "5,SUBTASK,Subtask2,NEW,Description subtask2,PT30M,2022-09-05T00:00,3\n" +
                         "6,SUBTASK,Subtask3,NEW,Description subtask3,PT1H,2022-09-06T00:00,3\n\n" +

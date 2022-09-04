@@ -2,6 +2,7 @@ package test;
 
 import manager.TaskManager;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import task.Epic;
 import task.Status;
 import task.Subtask;
@@ -41,9 +42,13 @@ abstract class TaskManagerTest <T extends TaskManager> {
         expectedEpics.put(3, new Epic("Epic1", "Description epic1", 3,
                 Status.NEW, Duration.ofMinutes(150),
                 LocalDateTime.of(2022, 9, 04, 00, 00, 00),
-                new ArrayList<>(Arrays.asList(4, 5, 6))));
+                new ArrayList<>(Arrays.asList(4, 5, 6)),
+                LocalDateTime.of(2022, 9, 04, 00, 00, 00)));
         expectedEpics.put(7, new Epic("Epic2", "Description epic2", 7,
-                Status.NEW, new ArrayList<>()));
+                Status.NEW, Duration.ofMinutes(0),
+                LocalDateTime.of(2022, 9, 07, 00, 00, 00),
+                new ArrayList<>(),
+                LocalDateTime.of(2022, 9, 07, 00, 00, 00)));
 
         HashMap<Integer, Epic> actualEpics = taskManager.getEpics();
 
@@ -99,7 +104,9 @@ abstract class TaskManagerTest <T extends TaskManager> {
     void Epics_deletion_correct() {
         HashMap<Integer, Epic> expectedEpics = new HashMap<>();
         expectedEpics.put(7, new Epic("Epic2", "Description epic2", 7,
-                Status.NEW, new ArrayList<>()));
+                Status.NEW, Duration.ofMinutes(0),
+                LocalDateTime.of(2022, 9, 07, 00, 00, 00),
+                new ArrayList<>(), LocalDateTime.of(2022, 9, 07, 00, 00, 00)));
 
         taskManager.deliteEpicByID(3);
         Task actualEpic = taskManager.getEpicByID(3);
@@ -156,7 +163,8 @@ abstract class TaskManagerTest <T extends TaskManager> {
         Epic epic = new Epic("Epic1", "Description epic1", 3,
                 Status.IN_PROGRESS, Duration.ofMinutes(60),
                 LocalDateTime.of(2022, 9, 03, 00, 00, 00),
-                new ArrayList<>(Arrays.asList(4, 5, 6)));
+                new ArrayList<>(Arrays.asList(4, 5, 6)),
+                LocalDateTime.of(2022, 9, 03, 00, 00, 00));
         taskManager.updateEpics(epic);
 
         Status expectedStatus = Status.IN_PROGRESS;
@@ -247,27 +255,14 @@ abstract class TaskManagerTest <T extends TaskManager> {
         taskManager.getSubtasksByEpicsID(3);
         taskManager.getEpicByID(7);
 
-        actualHistory = taskManager.getHistory().getInMemoryHistory();
-        List<Task> expectedHistory = List.of(
-                new Task("Task1", "Description task1", 1, Status.NEW, Duration.ofMinutes(60),
-                        LocalDateTime.of(2022, 9, 01, 00, 00, 00)),
-                new Task("Task2", "Description task2",2, Status.NEW, Duration.ofMinutes(60),
-                        LocalDateTime.of(2022, 9, 02, 00, 00, 00)),
-                new Epic("Epic1", "Description epic1", 3, Status.NEW, Duration.ofMinutes(150),
-                        LocalDateTime.of(2022, 9, 04, 00, 00, 00),
-                        new ArrayList<>(Arrays.asList(4, 5, 6))),
-                new Subtask("Subtask1", "Description subtask1", 4, Status.NEW, Duration.ofMinutes(60),
-                        LocalDateTime.of(2022, 9, 04, 00, 00, 00),3),
-                new Subtask("Subtask2", "Description subtask2", 5, Status.NEW, Duration.ofMinutes(30),
-                        LocalDateTime.of(2022, 9, 05, 00, 00, 00),3),
-                new Subtask("Subtask3", "Description subtask3", 6, Status.NEW, Duration.ofMinutes(60),
-                        LocalDateTime.of(2022, 9, 06, 00, 00, 00),3),
-                new Epic("Epic2", "Description epic2", 7, Status.NEW, new ArrayList<>())
-        );
+        List<Integer> actualIdNumberHistory = taskManager.getHistory().getInMemoryHistory().stream()
+                .map(Task::getIdNumber).collect(Collectors.toList());
+        List<Integer> expectedIdNumberHistory = List.of(1, 2, 3, 4, 5, 6, 7);
 
         assertNotNull(actualHistory, "История не пустая.");
-        assertEquals(expectedHistory.size(), actualHistory.size(), "История не пустая.");
-        assertEquals(expectedHistory, actualHistory, "Порядок истории не верный.");
+        assertEquals(expectedIdNumberHistory.size(), actualIdNumberHistory.size(),
+                "Размер истории не совпадает.");
+        assertEquals(expectedIdNumberHistory, actualIdNumberHistory, "Порядок истории не верный.");
     }
 
     @Test
@@ -281,25 +276,9 @@ abstract class TaskManagerTest <T extends TaskManager> {
         taskManager.getSubtasksByEpicsID(3);
         taskManager.getEpicByID(3);
 
-        List<Task> actualHistory = taskManager.getHistory().getInMemoryHistory();
-        List<Task> expectedHistory = List.of(
-
-                new Task("Task2", "Description task2",2, Status.NEW, Duration.ofMinutes(60),
-                        LocalDateTime.of(2022, 9, 02, 00, 00, 00)),
-                new Epic("Epic2", "Description epic2", 7, Status.NEW, new ArrayList<>()),
-                new Task("Task1", "Description task1", 1, Status.NEW, Duration.ofMinutes(60),
-                        LocalDateTime.of(2022, 9, 01, 00, 00, 00)),
-                new Subtask("Subtask1", "Description subtask1", 4, Status.NEW, Duration.ofMinutes(60),
-                        LocalDateTime.of(2022, 9, 04, 00, 00, 00),3),
-                new Subtask("Subtask2", "Description subtask2", 5, Status.NEW, Duration.ofMinutes(30),
-                        LocalDateTime.of(2022, 9, 05, 00, 00, 00),3),
-                new Subtask("Subtask3", "Description subtask3", 6, Status.NEW, Duration.ofMinutes(60),
-                        LocalDateTime.of(2022, 9, 06, 00, 00, 00),3),
-                new Epic("Epic1", "Description epic1", 3, Status.NEW, Duration.ofMinutes(150),
-                        LocalDateTime.of(2022, 9, 04, 00, 00, 00),
-                        new ArrayList<>(Arrays.asList(4, 5, 6)))
-                );
-
+        List<Integer> actualHistory = taskManager.getHistory().getInMemoryHistory().stream()
+                .map(Task::getIdNumber).collect(Collectors.toList());
+        List<Integer> expectedHistory = List.of(2, 7, 1, 4, 5, 6, 3);
 
         assertNotNull(actualHistory, "История не пустая.");
         assertEquals(expectedHistory.size(), actualHistory.size(), "История не пустая.");
@@ -316,12 +295,28 @@ abstract class TaskManagerTest <T extends TaskManager> {
         taskManager.deliteTaskByID(1);
         taskManager.deliteEpicByID(3);
 
-        List<Task> actualHistory = taskManager.getHistory().getInMemoryHistory();
-        List<Task> expectedHistory = List.of(
-                new Task("Task2", "Description task2",2, Status.NEW, Duration.ofMinutes(60),
-                        LocalDateTime.of(2022, 9, 02, 00, 00, 00)),
-                new Epic("Epic2", "Description epic2", 7, Status.NEW, new ArrayList<>())
-        );
+        List<Integer> actualHistory = taskManager.getHistory().getInMemoryHistory().stream()
+                .map(Task::getIdNumber).collect(Collectors.toList());
+        List<Integer> expectedHistory = List.of(2, 7);
+
+        assertNotNull(actualHistory, "История не пустая.");
+        assertEquals(expectedHistory.size(), actualHistory.size(), "История не пустая.");
+        assertEquals(expectedHistory, actualHistory, "История содержит удаленные позиции.");
+    }
+
+    @Test
+    void Browsing_history_does_not_contain_deleted_items2() {
+        taskManager.getTasks();
+        taskManager.getEpicByID(3);
+        taskManager.getSubtasksByEpicsID(3);
+        taskManager.getEpicByID(7);
+
+        taskManager.deliteAllTasks();
+        taskManager.deliteAllSubtasks();
+
+        List<Integer> actualHistory = taskManager.getHistory().getInMemoryHistory().stream()
+                .map(Task::getIdNumber).collect(Collectors.toList());
+        List<Integer> expectedHistory = List.of(3, 7);
 
         assertNotNull(actualHistory, "История не пустая.");
         assertEquals(expectedHistory.size(), actualHistory.size(), "История не пустая.");
@@ -355,14 +350,51 @@ abstract class TaskManagerTest <T extends TaskManager> {
         assertEquals(expectedPrioritizedTasks, actualPrioritizedTasks, "Сортировка по времени не верна");
 
         taskManager.addTasks(new Task("NewTask1", "Description task",
-                taskManager.generateIdNumber(), Status.NEW));
+                taskManager.generateIdNumber(), Status.NEW, null, null));
         taskManager.addSubtasks(new Subtask("NewSubtask1", "Description task",
-                taskManager.generateIdNumber(), Status.NEW, 3));
-        expectedPrioritizedTasks = List.of(1, 2, 4, 5, 6, 8, 9);
+                taskManager.generateIdNumber(), Status.NEW, null, null, 3));
+        assertThrows(IllegalArgumentException.class,
+                new Executable() {
+                    @Override
+                    public void execute() throws Throwable {
+                        taskManager.isTimeValid(new Subtask("NewSubtask1", "Description task",
+                                taskManager.generateIdNumber(), Status.NEW, null, null, 3));
+                    }
+                },
+                "Создание задачи с null не вызывает исключение");
+        expectedPrioritizedTasks = List.of(1, 2, 4, 5, 6);
         actualPrioritizedTasks = taskManager.getPrioritizedTasks()
                 .stream().map(Task::getIdNumber).collect(Collectors.toList());
 
         assertEquals(expectedPrioritizedTasks, actualPrioritizedTasks, "Задачи с null сортируются не верно");
+    }
+
+    @Test
+    void Tasks_prioritization_correct_after_tasks_delition() {
+        taskManager.deliteTaskByID(1);
+
+        List<Integer> expectedPrioritizedTasksID = List.of(2, 4, 5, 6);
+        List<Integer> actualPrioritizedTasksID = taskManager.getPrioritizedTasks()
+                .stream().map(Task::getIdNumber).collect(Collectors.toList());
+
+        assertEquals(expectedPrioritizedTasksID, actualPrioritizedTasksID,
+                "Сортировка по времени не верна после удаления");
+
+        taskManager.deliteAllTasks();
+        expectedPrioritizedTasksID = List.of(4, 5, 6);
+        actualPrioritizedTasksID = taskManager.getPrioritizedTasks()
+                .stream().map(Task::getIdNumber).collect(Collectors.toList());
+
+        assertEquals(expectedPrioritizedTasksID, actualPrioritizedTasksID,
+                "Сортировка по времени не верна после удаления");
+
+        taskManager.deliteAllSubtasks();
+        expectedPrioritizedTasksID = List.of();
+        actualPrioritizedTasksID = taskManager.getPrioritizedTasks()
+                .stream().map(Task::getIdNumber).collect(Collectors.toList());
+
+        assertEquals(expectedPrioritizedTasksID, actualPrioritizedTasksID,
+                "Сортировка по времени не верна после удаления");
     }
 
     @Test
