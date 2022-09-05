@@ -20,7 +20,7 @@ public class InMemoryTaskManager implements TaskManager {
     protected final HashMap<Integer, Subtask> subtasks;
     protected final HistoryManager historyManager;
     protected int idNumberReserv;
-    protected TreeSet<Task> prioritizedTasks;
+    protected final TreeSet<Task> prioritizedTasks;
 
     public InMemoryTaskManager() {
         this.tasks = new HashMap<>();
