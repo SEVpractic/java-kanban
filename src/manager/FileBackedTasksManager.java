@@ -20,13 +20,13 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
     public static TaskManager loadFromFile(File file) {
         FileBackedTasksManager tasksManager = new FileBackedTasksManager(file);
-        List<String> lines = new ArrayList<>();
+        List<String> lines;
 
         try (BufferedReader bufferedReader =
                      new BufferedReader(new FileReader(file, StandardCharsets.UTF_8))) {
             lines = bufferedReader.lines().filter(Objects::nonNull).toList();
         } catch (IOException e) {
-            System.out.println("Ошибка загрузки, файл не существует");
+            throw new RuntimeException("Файл для восстановления отсутствует или не читается");
         }
 
         tasksManager.fillTaskManager(lines);
@@ -53,26 +53,24 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
     private void fromString(String value) {
         String[] line = value.split(",");
-
+        if (line.length < 7) {
+            throw new IllegalArgumentException("Ошибка загрузки, не удалось создать объект (length < 7)");
+        }
         try {
-            if (line.length < 7) {
-                throw new IllegalArgumentException("Ошибка загрузки, не удалось создать объект (length < 7)");
-            }
-
             final String name = line[2];
             final String description = line[4];
             final int idNumber = Integer.parseInt(line[0]);
             final Status status = Status.valueOf(line[3]);
             final TasksType type = TasksType.valueOf(line[1]);
             final int epicsID;
-            final Duration duration = (line[5].equals("null")) ? null : Duration.parse(line[5]);
-            final LocalDateTime startTime = (line[5].equals("null")) ? null : LocalDateTime.parse(line[6]);
+            final Duration duration = Duration.parse(line[5]);
+            final LocalDateTime startTime = LocalDateTime.parse(line[6]);
 
             if (type.equals(TasksType.TASK)) {
                 addTasks(new Task(name, description, idNumber, status, duration, startTime));
             } else if (type.equals(TasksType.EPIC)) {
                 addEpics(new Epic(name, description, idNumber, status, duration, startTime, new ArrayList<>(), null));
-            } else if (type.equals(TasksType.SUBTASK)){
+            } else if (type.equals(TasksType.SUBTASK)) {
                 if (line.length < 8) {
                     throw new IllegalArgumentException();
                 } else if (epics.containsKey(Integer.parseInt(line[7]))) {
@@ -87,7 +85,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                 idNumberReserv = idNumber;
             }
         } catch (IllegalArgumentException e) {
-            e.printStackTrace();
+            throw new IllegalArgumentException("Ошибка загрузки, не удалось создать объект, не верные входные данные");
         }
     }
 
@@ -147,7 +145,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         try {
             save();
         } catch (ManagerSaveException e) {
-            System.out.println(e.getMessage());
+            throw new RuntimeException(e);
         }
 
         return tasks;
@@ -160,7 +158,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         try {
             save();
         } catch (ManagerSaveException e) {
-            System.out.println(e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
@@ -171,7 +169,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         try {
             save();
         } catch (ManagerSaveException e) {
-            System.out.println(e.getMessage());
+            throw new RuntimeException(e);
         }
 
         return tasks.get(idNumber);
@@ -184,7 +182,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         try {
             save();
         } catch (ManagerSaveException e) {
-            System.out.println(e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
@@ -195,7 +193,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         try {
             save();
         } catch (ManagerSaveException e) {
-            System.out.println(e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
@@ -206,7 +204,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         try {
             save();
         } catch (ManagerSaveException e) {
-            System.out.println(e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
@@ -217,7 +215,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         try {
             save();
         } catch (ManagerSaveException e) {
-            System.out.println(e.getMessage());
+            throw new RuntimeException(e);
         }
 
         return epics;
@@ -230,7 +228,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         try {
             save();
         } catch (ManagerSaveException e) {
-            System.out.println(e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
@@ -241,7 +239,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         try {
             save();
         } catch (ManagerSaveException e) {
-            System.out.println(e.getMessage());
+            throw new RuntimeException(e);
         }
 
         return epics.get(idNumber);
@@ -254,7 +252,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         try {
             save();
         } catch (ManagerSaveException e) {
-            System.out.println(e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
@@ -265,7 +263,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         try {
             save();
         } catch (ManagerSaveException e) {
-            System.out.println(e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
@@ -276,7 +274,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         try {
             save();
         } catch (ManagerSaveException e) {
-            System.out.println(e.getMessage());
+            throw new RuntimeException(e);
         }
 
         return subtasks;
@@ -289,7 +287,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         try {
             save();
         } catch (ManagerSaveException e) {
-            System.out.println(e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
@@ -300,7 +298,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         try {
             save();
         } catch (ManagerSaveException e) {
-            System.out.println(e.getMessage());
+            throw new RuntimeException(e);
         }
 
         return subtasks.get(idNumber);
@@ -313,7 +311,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         try {
             save();
         } catch (ManagerSaveException e) {
-            System.out.println(e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
@@ -324,7 +322,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         try {
             save();
         } catch (ManagerSaveException e) {
-            System.out.println(e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
@@ -335,7 +333,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         try {
             save();
         } catch (ManagerSaveException e) {
-            System.out.println(e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 }

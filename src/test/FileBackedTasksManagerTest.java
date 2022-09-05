@@ -2,21 +2,26 @@ package test;
 
 import manager.FileBackedTasksManager;
 import manager.Managers;
-import manager.TaskManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import task.Epic;
 import task.Status;
 import task.Subtask;
 import task.Task;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class FileBackedTasksManagerTest extends TaskManagerTest {
     File file;
@@ -95,7 +100,7 @@ public class FileBackedTasksManagerTest extends TaskManagerTest {
         taskManager.getEpicByID(7);
 
         expectedContent =
-                "id,type,name,status,description,duration,startTime,epic\n" +
+                        "id,type,name,status,description,duration,startTime,epic\n" +
                         "1,TASK,Task1,NEW,Description task1,PT1H,2022-09-01T00:00\n" +
                         "2,TASK,Task2,NEW,Description task2,PT1H,2022-09-02T00:00\n" +
                         "3,EPIC,Epic1,NEW,Description epic1,PT2H30M,2022-09-04T00:00\n" +
@@ -109,6 +114,14 @@ public class FileBackedTasksManagerTest extends TaskManagerTest {
 
         assertEquals(expectedContent, actualContent,
                 "Не корректное содержание файла экземпляра класса FileBackedTasksManager с заполненной историей");
+
+        assertThrows(RuntimeException.class, () -> {
+            file.setReadOnly();
+            taskManager.addTasks(new Task("Task", "Description task",
+                    taskManager.generateIdNumber(), Status.NEW, Duration.ofMinutes(60),
+                    LocalDateTime.of(2022, 9, 10, 00, 00, 00)));
+        },
+                "Не выбрасывается исключение при ошибке сохранения");
     }
 
     @Test
@@ -118,12 +131,23 @@ public class FileBackedTasksManagerTest extends TaskManagerTest {
         taskManager.getSubtasksByEpicsID(3);
         taskManager.getEpicByID(7);
 
-        TaskManager taskManagerNew = FileBackedTasksManager.loadFromFile(file);
-
-        String expectedManager = taskManager.toString();
-        String actualManager = taskManagerNew.toString();
-
-        assertEquals(expectedManager, actualManager,
+        assertEquals(taskManager.toString(), FileBackedTasksManager.loadFromFile(file).toString(),
                 "Содержимое экземпляра класса FileBackedTasksManager не корректно восстанавливается из файла");
+
+        file.delete();
+        assertThrows(RuntimeException.class,
+                () -> FileBackedTasksManager.loadFromFile(file),
+                "Не выбрасывается исключение при создании экземпляра из отсутствующего файла");
+
+        File file1 = new File("src/test1.csv");
+        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file1, StandardCharsets.UTF_8))) {
+            bufferedWriter.write("id,type,name,status,description,duration,startTime,epic\n aa,bb,cc,dd");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        assertThrows(IllegalArgumentException.class,
+                () -> FileBackedTasksManager.loadFromFile(file1),
+                "Не выбрасывается исключение при создании экземпляра из неверно заполненного файла");
+        file1.delete();
     }
 }

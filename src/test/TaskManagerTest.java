@@ -2,7 +2,6 @@ package test;
 
 import manager.TaskManager;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
 import task.Epic;
 import task.Status;
 import task.Subtask;
@@ -10,7 +9,10 @@ import task.Task;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -349,24 +351,10 @@ abstract class TaskManagerTest <T extends TaskManager> {
 
         assertEquals(expectedPrioritizedTasks, actualPrioritizedTasks, "Сортировка по времени не верна");
 
-        taskManager.addTasks(new Task("NewTask1", "Description task",
-                taskManager.generateIdNumber(), Status.NEW, null, null));
-        taskManager.addSubtasks(new Subtask("NewSubtask1", "Description task",
-                taskManager.generateIdNumber(), Status.NEW, null, null, 3));
         assertThrows(IllegalArgumentException.class,
-                new Executable() {
-                    @Override
-                    public void execute() throws Throwable {
-                        taskManager.isTimeValid(new Subtask("NewSubtask1", "Description task",
-                                taskManager.generateIdNumber(), Status.NEW, null, null, 3));
-                    }
-                },
+                () -> taskManager.isTimeValid(new Subtask("NewSubtask1", "Description task",
+                        taskManager.generateIdNumber(), Status.NEW, null, null, 3)),
                 "Создание задачи с null не вызывает исключение");
-        expectedPrioritizedTasks = List.of(1, 2, 4, 5, 6);
-        actualPrioritizedTasks = taskManager.getPrioritizedTasks()
-                .stream().map(Task::getIdNumber).collect(Collectors.toList());
-
-        assertEquals(expectedPrioritizedTasks, actualPrioritizedTasks, "Задачи с null сортируются не верно");
     }
 
     @Test
@@ -399,17 +387,16 @@ abstract class TaskManagerTest <T extends TaskManager> {
 
     @Test
     void Time_validation_defence_correct() {
-        TreeSet<Task> expectedPrioritizedTasks = taskManager.getPrioritizedTasks();
+        assertThrows(IllegalArgumentException.class,
+                () -> taskManager.addTasks(new Task("NewTask1", "Description task",
+                        taskManager.generateIdNumber(), Status.NEW, Duration.ofMinutes(60),
+                        LocalDateTime.of(2022, 9, 01, 00, 30, 00))),
+                "Валидация по времени не корректно проверяет пересечение (начало нового - внутри имеющегося)");
 
-        taskManager.addTasks(new Task("NewTask1", "Description task",
-                taskManager.generateIdNumber(), Status.NEW, Duration.ofMinutes(60),
-                LocalDateTime.of(2022, 9, 01, 00, 30, 00)));
-        taskManager.addTasks(new Task("NewTask2", "Description task",
-                taskManager.generateIdNumber(), Status.NEW, Duration.ofMinutes(60),
-                LocalDateTime.of(2022, 9, 01, 23, 30, 00)));
-        TreeSet<Task> actualPrioritizedTasks = taskManager.getPrioritizedTasks();
-
-        assertEquals(expectedPrioritizedTasks, actualPrioritizedTasks,
-                "Валидация по времени работает не верно");
+        assertThrows(IllegalArgumentException.class,
+                () -> taskManager.addTasks(new Task("NewTask2", "Description task",
+                        taskManager.generateIdNumber(), Status.NEW, Duration.ofMinutes(60),
+                        LocalDateTime.of(2022, 9, 01, 23, 30, 00))),
+                "Валидация по времени не корректно проверяет пересечение (длительность нового - внутри имеющегося)");
     }
 }
