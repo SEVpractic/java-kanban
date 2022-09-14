@@ -1,34 +1,37 @@
 package test;
 
-import manager.FileBackedTasksManager;
+import manager.HTTPTaskManager;
 import manager.Managers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import server.KVServer;
 import task.Epic;
 import task.Status;
 import task.Subtask;
 import task.Task;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class FileBackedTasksManagerTest extends TaskManagerTest {
-    File file;
+public class HTTPTaskManagerTest extends TaskManagerTest {
+    KVServer server;
+    HttpClient httpClient;
 
     @BeforeEach
-    void fillTaskManager() {
-        file = new File("src/test.csv");
-        taskManager = Managers.getFileBackedManager("src/test.csv");
+    void fillTaskManager() throws IOException {
+        server = new KVServer();
+        server.start();
+
+        taskManager = Managers.getDefault("http://localhost:8078");
 
         Task task1 = new Task("Task1", "Description task1",
                 taskManager.generateIdNumber(), Status.NEW, Duration.ofMinutes(60),
@@ -72,12 +75,12 @@ public class FileBackedTasksManagerTest extends TaskManagerTest {
     }
 
     @AfterEach
-    void deliteFile() {
-        file.delete();
+    void stopServer() {
+        server.stop();
     }
 
     @Test
-    void Save_to_file_correct() {
+    void Save_to_server_correct() {
         String expectedContent =
                         "id,type,name,status,description,duration,startTime,epic\n" +
                         "1,TASK,Task1,NEW,Description task1,PT1H,2022-09-01T00:00\n" +
@@ -88,10 +91,37 @@ public class FileBackedTasksManagerTest extends TaskManagerTest {
                         "5,SUBTASK,Subtask2,NEW,Description subtask2,PT30M,2022-09-05T00:00,3\n" +
                         "6,SUBTASK,Subtask3,NEW,Description subtask3,PT1H,2022-09-06T00:00,3\n\n";
 
-        String actualContent = taskManager.toString();
+        String actualContent = "";
+        String key = "";
+
+        httpClient = HttpClient.newHttpClient();
+        URI URL = URI.create("http://localhost:8078/register");
+        HttpRequest request = HttpRequest.newBuilder().uri(URL).GET().build();
+
+        try {
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == 200) {
+                key = response.body();
+            }
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        httpClient = HttpClient.newHttpClient();
+        URL = URI.create("http://localhost:8078/load/?API_TOKEN=" + key);
+        request = HttpRequest.newBuilder().uri(URL).GET().build();
+
+        try {
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == 200) {
+                actualContent = response.body();
+            }
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         assertEquals(expectedContent, actualContent,
-                "Не корректное содержание файла экземпляра класса FileBackedTasksManager с пустой историей");
+                "Не корректное содержание value экземпляра класса HTTPTaskManager с пустой историей");
 
         taskManager.getTasks();
         taskManager.getEpicByID(3);
@@ -109,44 +139,31 @@ public class FileBackedTasksManagerTest extends TaskManagerTest {
                         "6,SUBTASK,Subtask3,NEW,Description subtask3,PT1H,2022-09-06T00:00,3\n\n" +
                         "1,2,3,4,5,6,7";
 
-        actualContent = taskManager.toString();
+        httpClient = HttpClient.newHttpClient();
+        URL = URI.create("http://localhost:8078/load/?API_TOKEN=" + key);
+        request = HttpRequest.newBuilder().uri(URL).GET().build();
+
+        try {
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == 200) {
+                actualContent = response.body();
+            }
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         assertEquals(expectedContent, actualContent,
-                "Не корректное содержание файла экземпляра класса FileBackedTasksManager с заполненной историей");
-
-        assertThrows(RuntimeException.class, () -> {
-            file.setReadOnly();
-            taskManager.addTasks(new Task("Task", "Description task",
-                    taskManager.generateIdNumber(), Status.NEW, Duration.ofMinutes(60),
-                    LocalDateTime.of(2022, 9, 10, 00, 00, 00)));
-        },
-                "Не выбрасывается исключение при ошибке сохранения");
+                "Не корректное содержание value экземпляра класса HTTPTaskManager с заполненной историей");
     }
 
     @Test
-    void Load_from_file_correct() {
+    void Load_from_server_correct() {
         taskManager.getTasks();
         taskManager.getEpicByID(3);
         taskManager.getSubtasksByEpicsID(3);
         taskManager.getEpicByID(7);
 
-        assertEquals(taskManager.toString(), FileBackedTasksManager.loadFromFile("src/test.csv").toString(),
-                "Содержимое экземпляра класса FileBackedTasksManager не корректно восстанавливается из файла");
-
-        file.delete();
-        assertThrows(RuntimeException.class,
-                () -> FileBackedTasksManager.loadFromFile("src/test.csv"),
-                "Не выбрасывается исключение при создании экземпляра из отсутствующего файла");
-
-        File file1 = new File("src/test1.csv");
-        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file1, StandardCharsets.UTF_8))) {
-            bufferedWriter.write("id,type,name,status,description,duration,startTime,epic\n aa,bb,cc,dd");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        assertThrows(IllegalArgumentException.class,
-                () -> FileBackedTasksManager.loadFromFile("src/test1.csv"),
-                "Не выбрасывается исключение при создании экземпляра из неверно заполненного файла");
-        file1.delete();
+        assertEquals(taskManager.toString(), HTTPTaskManager.loadFromServer("http://localhost:8078").toString(),
+                "Содержимое экземпляра класса HTTPTaskManager не корректно восстанавливается c сервера");
     }
 }

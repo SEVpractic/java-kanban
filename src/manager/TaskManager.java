@@ -19,16 +19,16 @@ public interface TaskManager {
 
     public void updatePrioritizedTasks(Task task);
 
-    public void delitePrioritizedTasks(Task task);
+    public void deletePrioritizedTasks(Task task);
 
-    public void delitePrioritizedTasks(Task[] tasks);
+    public void deletePrioritizedTasks(Task[] tasks);
 
     public boolean isTimeValid(Task task);
 
     // Методы по коллекции задач
     public HashMap<Integer, Task> getTasks();
 
-    public void deliteAllTasks();
+    public void deleteAllTasks();
 
     public Task getTaskByID(int idNumber);
 
@@ -36,12 +36,12 @@ public interface TaskManager {
 
     public void updateTasks(Task task);
 
-    public void deliteTaskByID(int idNumber);
+    public void deleteTaskByID(int idNumber);
 
     // Методы по коллекции эпиков
     public HashMap<Integer, Epic> getEpics();
 
-    public void deliteAllEpics();
+    public void deleteAllEpics();
 
     public Epic getEpicByID(int idNumber);
 
@@ -57,14 +57,14 @@ public interface TaskManager {
 
     public void checkEpicsEndTime(int epicsID);
 
-    public void deliteEpicByID(int idNumber);
+    public void deleteEpicByID(int idNumber);
 
     public HashMap<Integer, Subtask> getSubtasksByEpicsID(int idNumber);
 
     // методы по коллекции подзадач
     public HashMap<Integer, Subtask> getSubtasks();
 
-    public void deliteAllSubtasks();
+    public void deleteAllSubtasks();
 
     public Subtask getSubtaskByID(int idNumber);
 
@@ -72,7 +72,7 @@ public interface TaskManager {
 
     public void updateSubtasks(Subtask subtask);
 
-    public void deliteSubtaskByID(int idNumber);
+    public void deleteSubtaskByID(int idNumber);
 
     public void addSubtaskToEpic(Subtask subtask);
 

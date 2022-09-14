@@ -93,7 +93,7 @@ abstract class TaskManagerTest <T extends TaskManager> {
                 Status.NEW, Duration.ofMinutes(60),
                 LocalDateTime.of(2022, 9, 02, 00, 00, 00)));
 
-        taskManager.deliteTaskByID(1);
+        taskManager.deleteTaskByID(1);
         Task actualTask = taskManager.getTaskByID(1);
         HashMap<Integer, Task> actualTasks = taskManager.getTasks();
 
@@ -110,7 +110,7 @@ abstract class TaskManagerTest <T extends TaskManager> {
                 LocalDateTime.of(2022, 9, 07, 00, 00, 00),
                 new ArrayList<>(), LocalDateTime.of(2022, 9, 07, 00, 00, 00)));
 
-        taskManager.deliteEpicByID(3);
+        taskManager.deleteEpicByID(3);
         Task actualEpic = taskManager.getEpicByID(3);
         HashMap<Integer, Epic> actualEpics = taskManager.getEpics();
 
@@ -129,7 +129,7 @@ abstract class TaskManagerTest <T extends TaskManager> {
                 6, Status.NEW, Duration.ofMinutes(60),
                 LocalDateTime.of(2022, 9, 06, 00, 00, 00),3));
 
-        taskManager.deliteSubtaskByID(4);
+        taskManager.deleteSubtaskByID(4);
         Task actualSubtask = taskManager.getSubtaskByID(4);
         HashMap<Integer, Subtask> actualSubtasks = taskManager.getSubtasks();
 
@@ -140,7 +140,7 @@ abstract class TaskManagerTest <T extends TaskManager> {
 
     @Test
     void Subtasks_And_Epic_deletion_correct() {
-        taskManager.deliteEpicByID(3);
+        taskManager.deleteEpicByID(3);
         HashMap<Integer, Subtask> actualSubtasks = taskManager.getSubtasks();
 
         assertEquals(0, actualSubtasks.size(), "При удалении эпика подзадачи удаляются не корректно.");
@@ -236,8 +236,8 @@ abstract class TaskManagerTest <T extends TaskManager> {
                 LocalDateTime.of(2022, 9, 04, 00, 00, 00),3);
         taskManager.updateSubtasks(subtask);
 
-        taskManager.deliteSubtaskByID(5);
-        taskManager.deliteSubtaskByID(6);
+        taskManager.deleteSubtaskByID(5);
+        taskManager.deleteSubtaskByID(6);
 
         Status expectedStatus = Status.DONE;
         Status actualStatus = taskManager.getEpicByID(3).getStatus();
@@ -294,8 +294,8 @@ abstract class TaskManagerTest <T extends TaskManager> {
         taskManager.getSubtasksByEpicsID(3);
         taskManager.getEpicByID(7);
 
-        taskManager.deliteTaskByID(1);
-        taskManager.deliteEpicByID(3);
+        taskManager.deleteTaskByID(1);
+        taskManager.deleteEpicByID(3);
 
         List<Integer> actualHistory = taskManager.getHistory().getInMemoryHistory().stream()
                 .map(Task::getIdNumber).collect(Collectors.toList());
@@ -313,8 +313,8 @@ abstract class TaskManagerTest <T extends TaskManager> {
         taskManager.getSubtasksByEpicsID(3);
         taskManager.getEpicByID(7);
 
-        taskManager.deliteAllTasks();
-        taskManager.deliteAllSubtasks();
+        taskManager.deleteAllTasks();
+        taskManager.deleteAllSubtasks();
 
         List<Integer> actualHistory = taskManager.getHistory().getInMemoryHistory().stream()
                 .map(Task::getIdNumber).collect(Collectors.toList());
@@ -358,8 +358,8 @@ abstract class TaskManagerTest <T extends TaskManager> {
     }
 
     @Test
-    void Tasks_prioritization_correct_after_tasks_delition() {
-        taskManager.deliteTaskByID(1);
+    void Tasks_prioritization_correct_after_tasks_deletion() {
+        taskManager.deleteTaskByID(1);
 
         List<Integer> expectedPrioritizedTasksID = List.of(2, 4, 5, 6);
         List<Integer> actualPrioritizedTasksID = taskManager.getPrioritizedTasks()
@@ -368,7 +368,7 @@ abstract class TaskManagerTest <T extends TaskManager> {
         assertEquals(expectedPrioritizedTasksID, actualPrioritizedTasksID,
                 "Сортировка по времени не верна после удаления");
 
-        taskManager.deliteAllTasks();
+        taskManager.deleteAllTasks();
         expectedPrioritizedTasksID = List.of(4, 5, 6);
         actualPrioritizedTasksID = taskManager.getPrioritizedTasks()
                 .stream().map(Task::getIdNumber).collect(Collectors.toList());
@@ -376,7 +376,7 @@ abstract class TaskManagerTest <T extends TaskManager> {
         assertEquals(expectedPrioritizedTasksID, actualPrioritizedTasksID,
                 "Сортировка по времени не верна после удаления");
 
-        taskManager.deliteAllSubtasks();
+        taskManager.deleteAllSubtasks();
         expectedPrioritizedTasksID = List.of();
         actualPrioritizedTasksID = taskManager.getPrioritizedTasks()
                 .stream().map(Task::getIdNumber).collect(Collectors.toList());

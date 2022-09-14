@@ -12,18 +12,18 @@ import java.util.List;
 import java.util.Objects;
 
 public class FileBackedTasksManager extends InMemoryTaskManager {
-    private final File file;
+    protected final String source;
 
-    public FileBackedTasksManager(File file) {
-        this.file = file;
+    public FileBackedTasksManager(String source) {
+        this.source = source;
     }
 
-    public static TaskManager loadFromFile(File file) {
-        FileBackedTasksManager tasksManager = new FileBackedTasksManager(file);
+    public static TaskManager loadFromFile(String source) {
+        FileBackedTasksManager tasksManager = new FileBackedTasksManager(source);
         List<String> lines;
 
         try (BufferedReader bufferedReader =
-                     new BufferedReader(new FileReader(file, StandardCharsets.UTF_8))) {
+                     new BufferedReader(new FileReader(source, StandardCharsets.UTF_8))) {
             lines = bufferedReader.lines().filter(Objects::nonNull).toList();
         } catch (IOException e) {
             throw new RuntimeException("Файл для восстановления отсутствует или не читается");
@@ -35,11 +35,11 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         return tasksManager;
     }
 
-    private void fillTaskManager(List<String> lines) {
+    protected void fillTaskManager(List<String> lines) {
         lines.stream().skip(1).limit(lines.size() - 3).forEach(this::fromString);
     }
 
-    private void fillHistory(List<Integer> history) {
+    protected void fillHistory(List<Integer> history) {
         for (Integer id : history) {
             if (tasks.containsKey(id)) {
                 getTaskByID(id);
@@ -51,7 +51,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         }
     }
 
-    private void fromString(String value) {
+    protected void fromString(String value) {
         String[] line = value.split(",");
         if (line.length < 7) {
             throw new IllegalArgumentException("Ошибка загрузки, не удалось создать объект (length < 7)");
@@ -81,17 +81,17 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                 addSubtasks(new Subtask(name, description, idNumber, status, duration, startTime, epicsID));
             }
 
-            if (idNumberReserv < idNumber) {
-                idNumberReserv = idNumber;
+            if (idNumberReserve < idNumber) {
+                idNumberReserve = idNumber;
             }
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Ошибка загрузки, не удалось создать объект, не верные входные данные");
         }
     }
 
-    private void save() throws ManagerSaveException {
+    protected void save() throws ManagerSaveException {
         try (BufferedWriter bufferedWriter =
-                     new BufferedWriter(new FileWriter(file, StandardCharsets.UTF_8))) {
+                     new BufferedWriter(new FileWriter(source, StandardCharsets.UTF_8))) {
             bufferedWriter.write(toString());
         } catch (IOException e) {
             throw new ManagerSaveException("Ошибка сохранения");
@@ -152,8 +152,8 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     @Override
-    public void deliteAllTasks() {
-        super.deliteAllTasks();
+    public void deleteAllTasks() {
+        super.deleteAllTasks();
 
         try {
             save();
@@ -198,8 +198,8 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     @Override
-    public void deliteTaskByID(int idNumber) {
-        super.deliteTaskByID(idNumber);
+    public void deleteTaskByID(int idNumber) {
+        super.deleteTaskByID(idNumber);
 
         try {
             save();
@@ -222,8 +222,8 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     @Override
-    public void deliteAllEpics() {
-        super.deliteAllEpics();
+    public void deleteAllEpics() {
+        super.deleteAllEpics();
 
         try {
             save();
@@ -257,8 +257,8 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     @Override
-    public void deliteEpicByID(int idNumber) {
-        super.deliteEpicByID(idNumber);
+    public void deleteEpicByID(int idNumber) {
+        super.deleteEpicByID(idNumber);
 
         try {
             save();
@@ -281,8 +281,8 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     @Override
-    public void deliteAllSubtasks() {
-        super.deliteAllSubtasks();
+    public void deleteAllSubtasks() {
+        super.deleteAllSubtasks();
 
         try {
             save();
@@ -327,8 +327,8 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     @Override
-    public void deliteSubtaskByID(int idNumber) {
-        super.deliteSubtaskByID(idNumber);
+    public void deleteSubtaskByID(int idNumber) {
+        super.deleteSubtaskByID(idNumber);
 
         try {
             save();

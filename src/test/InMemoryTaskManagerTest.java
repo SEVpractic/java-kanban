@@ -15,7 +15,7 @@ class InMemoryTaskManagerTest extends TaskManagerTest {
 
     @BeforeEach
     void fillTaskManager() {
-        taskManager = Managers.getDefault();
+        taskManager = Managers.getInMemoryTaskManager();
 
         Task task1 = new Task("Task1", "Description task1",
                 taskManager.generateIdNumber(), Status.NEW, Duration.ofMinutes(60),

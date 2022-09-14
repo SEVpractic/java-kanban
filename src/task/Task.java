@@ -9,7 +9,7 @@ public class Task {
     protected final String description;
     protected final int idNumber;
     protected final Status status;
-    protected final TasksType type;
+    protected TasksType type;
     protected final Duration duration; // продолжительность задачи в минутах
     protected final LocalDateTime startTime; // время начала выполнения задачи
 
@@ -21,7 +21,17 @@ public class Task {
         this.status = status;
         this.duration = duration;
         this.startTime = startTime;
-        this.type = TasksType.TASK;
+        this.type = setType();
+    }
+
+    protected TasksType setType() {
+        if (Task.class.equals(this.getClass())) {
+            return TasksType.TASK;
+        } else if (Subtask.class.equals(this.getClass())) {
+            return TasksType.SUBTASK;
+        } else {
+            return TasksType.EPIC;
+        }
     }
 
     public String getName() {

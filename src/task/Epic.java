@@ -6,13 +6,11 @@ import java.util.ArrayList;
 
 public class Epic extends Task {
     private final ArrayList<Integer> includeSubtasksIDs;
-    private final TasksType type;
     private final LocalDateTime endTime; // время завершения задачи
 
     public Epic(String name, String description, int idNumber, Status status, Duration duration,
                 LocalDateTime startTime, ArrayList<Integer> includeSubtasksIDs, LocalDateTime endTime) {
         super(name, description, idNumber, status, duration, startTime);
-        this.type = TasksType.EPIC;
         this.includeSubtasksIDs = includeSubtasksIDs;
         this.endTime = endTime;
     }
